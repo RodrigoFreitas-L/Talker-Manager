@@ -9,4 +9,11 @@ const readTalkers = async () => {
   return parseTalkers;
 };
 
-module.exports = { readTalkers, generateToken };
+const writeTalkers = async (newTalker) => {
+  const getTalkers = await readTalkers();
+  getTalkers.push(newTalker);
+  const writeTalkersFile = await fs.writeFile('talker.json', JSON.stringify(getTalkers, null, 2));
+  return writeTalkersFile;
+};
+
+module.exports = { readTalkers, generateToken, writeTalkers };

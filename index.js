@@ -1,7 +1,13 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const talker = require('./talker.json');
-const { readTalkers, generateToken } = require('./helpers');
+const { readTalkers, generateToken, writeTalkers } = require('./helpers');
+const { verifyName } = require('./middlewares/verifyName');
+const { verifyAge } = require('./middlewares/verifyAge');
+const { verifyTalk } = require('./middlewares/verifyTalk');
+const { verifyWatchedAt } = require('./middlewares/verifyWatchedAt');
+const { verifyRate } = require('./middlewares/verifyRate');
+const { verifyToken } = require('./middlewares/verifyToken');
 
 const app = express();
 app.use(bodyParser.json());
@@ -46,6 +52,14 @@ app.post('/login', (req, res) => {
   if(password.length < 6) return res.status(400).json({ message: "O \"password\" deve ter pelo menos 6 caracteres"});
 
   res.status(200).json({ token: generateToken() });
+});
+
+app.post('/talker', verifyToken, verifyName, verifyAge, verifyTalk, verifyWatchedAt, verifyRate, async (req, res) => {
+  const { name, age, talk: { watchedAt, rate } } = req.body;
+  const getTalkers = await readTalkers();
+  const id = getTalkers.length + 1;
+  await writeTalkers({ name, age, id, talk: { watchedAt, rate } });
+  return res.status(201).json({ name, age, id, talk: { watchedAt, rate } });
 });
 
 app.listen(PORT, () => {
