@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const talker = require('./talker.json');
-const { readTalkers } = require('./helpers');
+const { readTalkers, generateToken } = require('./helpers');
 
 const app = express();
 app.use(bodyParser.json());
@@ -31,6 +31,11 @@ app.get('/talker/:id', async (req, res) => {
   } catch (error) {
     return res.status(500).end();
   }
+});
+
+app.post('/login', (req, res) => {
+  const { email, password } = req.body;
+  res.status(200).json({ token: generateToken() });
 });
 
 app.listen(PORT, () => {
