@@ -16,4 +16,4 @@ const writeTalkers = async (newTalker) => {
   return writeTalkersFile;
 };
 
-module.exports = { readTalkers, generateToken, writeTalkers };
+module.exports = { readTalkers, generateToken, writeTalkers };  

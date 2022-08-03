@@ -1,13 +1,14 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const talker = require('./talker.json');
-const { readTalkers, generateToken, writeTalkers } = require('./helpers');
+const { readTalkers, generateToken, writeTalkers, modifyTalker } = require('./helpers');
 const { verifyName } = require('./middlewares/verifyName');
 const { verifyAge } = require('./middlewares/verifyAge');
 const { verifyTalk } = require('./middlewares/verifyTalk');
 const { verifyWatchedAt } = require('./middlewares/verifyWatchedAt');
 const { verifyRate } = require('./middlewares/verifyRate');
 const { verifyToken } = require('./middlewares/verifyToken');
+const fs = require('fs').promises;
 
 const app = express();
 app.use(bodyParser.json());
@@ -60,6 +61,18 @@ app.post('/talker', verifyToken, verifyName, verifyAge, verifyTalk, verifyWatche
   const id = getTalkers.length + 1;
   await writeTalkers({ name, age, id, talk: { watchedAt, rate } });
   return res.status(201).json({ name, age, id, talk: { watchedAt, rate } });
+});
+
+app.put('/talker/:id',verifyToken, verifyName, verifyAge, verifyTalk, verifyWatchedAt, verifyRate, async (req, res) => {
+  const { id } = req.params;
+  const idToNumber = Number(id);
+  const { name, age, talk: { watchedAt, rate } } = req.body;
+  const getTalkers = await readTalkers();
+  const talkerById = getTalkers.findIndex((talker) => talker.id === Number(id));
+  const newTalker = [...getTalkers];
+  newTalker[talkerById] = { name, age, id: idToNumber, talk: { watchedAt, rate } };
+  await fs.writeFile('talker.json', JSON.stringify(newTalker));
+  return res.status(200).json({ name, age, id: idToNumber, talk: { watchedAt, rate } });
 });
 
 app.listen(PORT, () => {
