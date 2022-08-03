@@ -92,10 +92,19 @@ app.put(
   const talkerById = getTalkers.findIndex((talker) => talker.id === Number(id));
   const newTalker = [...getTalkers];
   newTalker[talkerById] = { name, age, id: idToNumber, talk: { watchedAt, rate } };
-  await fs.writeFile('talker.json', JSON.stringify(newTalker));
+  await fs.writeFile('./talker.json', JSON.stringify(newTalker, null, 2));
   return res.status(200).json({ name, age, id: idToNumber, talk: { watchedAt, rate } });
 },
 );
+
+app.delete('/talker/:id', verifyToken, async (req, res) => {
+  const { id } = req.params;
+  const getTalkers = await readTalkers();
+  const talkerById = getTalkers.filter((talker) => talker.id !== Number(id));
+  const newTalker = [...talkerById];
+  await fs.writeFile('talker.json', JSON.stringify(newTalker));
+  return res.status(204).end();
+});
 
 app.listen(PORT, () => {
   console.log('Online');
